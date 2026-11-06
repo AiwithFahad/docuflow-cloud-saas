@@ -1,0 +1,5 @@
+Q3 SALES REPORT
+===============
+Quarterly sales summary (demo seed data).
+Pipeline grew 18% quarter over quarter. Enterprise segment led growth.
+Prepared for internal review in DocuFlow Cloud.

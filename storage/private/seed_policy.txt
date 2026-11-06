@@ -1,0 +1,5 @@
+REMOTE WORK POLICY
+==================
+Demo Company Inc remote work policy, effective 2026.
+Employees may work remotely up to 3 days per week with manager approval.
+Core collaboration hours: 10:00-15:00. (Demo seed file.)

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DocuFlow Cloud — Secure Document Management SaaS</title>
+<meta name="description" content="DocuFlow Cloud — multi-tenant document management: upload, organize, share, approve and version documents securely.">
+<link rel="stylesheet" href="assets/css/demo.css">
+</head>
+<body>
+<div class="demo-tag">📄 Static demo of <strong>DocuFlow Cloud</strong> — the full application is a Core PHP 8 + MySQL SaaS (see the GitHub repository). <a href="dashboard.html">Open the live dashboard demo →</a></div>
+<header class="nav"><div class="container nav-in">
+  <a class="brand" href="index.html"><span class="brand-mark">☁</span> DocuFlow <span class="text-purple">Cloud</span></a>
+  <button class="nav-burger" id="burger" aria-label="Menu">☰</button>
+  <nav class="nav-links" id="navLinks">
+    <a href="#features">Features</a><a href="#workflow">Workflow</a><a href="#security">Security</a>
+    <a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    <a class="btn btn-outline btn-sm" href="dashboard.html">Sign in</a>
+    <a class="btn btn-purple btn-sm" href="dashboard.html">Start free trial</a>
+  </nav>
+</div></header>
+
+<section class="hero"><div class="container hero-grid">
+  <div>
+    <span class="badge">✦ Multi-tenant document cloud</span>
+    <h1>Every document your team needs. <span class="text-purple">Organized, secure, approved.</span></h1>
+    <p class="lead">DocuFlow Cloud gives your company a private document workspace — upload, organize in nested folders, share with expiring links, run approval workflows and keep every version, isolated per tenant.</p>
+    <div class="cta-row">
+      <a class="btn btn-purple btn-lg" href="dashboard.html">Start free trial →</a>
+      <a class="btn btn-outline btn-lg" href="#pricing">View pricing</a>
+    </div>
+    <div class="points"><span>14-day free trial</span><span>No card required</span><span>Cancel anytime</span></div>
+  </div>
+  <div class="dash" aria-hidden="true">
+    <div class="dash-bar"><span class="dot3" style="background:#ff5f57"></span><span class="dot3" style="background:#febc2e"></span><span class="dot3" style="background:#28c840"></span><span style="margin-left:.5rem">app.docuflow.cloud/files</span></div>
+    <div class="dash-body">
+      <div class="dp-side"><div class="dp-logo"></div><div class="dp-item active"></div><div class="dp-item"></div><div class="dp-item"></div><div class="dp-item"></div><div class="dp-item w75"></div></div>
+      <div class="dp-main">
+        <div class="dp-cards">
+          <div class="dp-card">📄<b>1,284</b><small>Documents</small></div>
+          <div class="dp-card">🗂️<b>96</b><small>Folders</small></div>
+          <div class="dp-card">💾<b>8.4 GB</b><small>Stored securely</small></div>
+        </div>
+        <div class="dp-chart"><canvas id="heroChart"></canvas></div>
+        <div class="dp-file">📕 Q3-Report.pdf <span class="tag ok">Approved</span></div>
+        <div class="dp-file">📗 Budget-2026.xlsx <span class="tag warn">In review</span></div>
+        <div class="dp-file">📘 Policy-v4.docx <span class="tag info">v4</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section white" style="padding:38px 0">
+  <div class="container center">
+    <p style="color:var(--muted);text-transform:uppercase;font-size:.8rem;font-weight:700;letter-spacing:.06em">Trusted by document-driven teams at</p>
+    <div class="logos" style="margin-top:1.2rem"><span>🏢 Northwind</span><span>🏢 Acme Corp</span><span>⚖️ Helios Legal</span><span>🏥 BrightMed</span><span>🔬 Vertex Labs</span><span>🏔️ BluePeak</span><span>🏢 Stonebridge</span></div>
+  </div>
+</section>
+
+<section class="section" id="features"><div class="container">
+  <div class="center"><span class="tag2">Features</span><h2>A document platform, not just cloud storage</h2>
+  <p class="sub">Everything a growing business needs to control its files — built for companies, teams and approvals.</p></div>
+  <div class="grid c4">
+    <div class="card"><div class="icon">🗂️</div><h3>Nested file manager</h3><p>Unlimited nested folders with grid &amp; list views, colors and drag-and-drop uploads.</p></div>
+    <div class="card"><div class="icon">🏷️</div><h3>Categories &amp; tags</h3><p>Classify files with categories and multi-tag search — anything findable in seconds.</p></div>
+    <div class="card"><div class="icon">🕘</div><h3>Version control</h3><p>Every upload keeps a version history with restore points, capped by your plan.</p></div>
+    <div class="card"><div class="icon">✅</div><h3>Approval workflows</h3><p>Route documents to approvers and keep a complete, auditable decision trail.</p></div>
+    <div class="card"><div class="icon">🔗</div><h3>Secure sharing</h3><p>Expiring token links, optional download permission, view counts and instant revoke.</p></div>
+    <div class="card"><div class="icon">👥</div><h3>Teams &amp; permissions</h3><p>Per-document permissions for users and teams: view, download, edit — server-enforced.</p></div>
+    <div class="card"><div class="icon">🛡️</div><h3>Enterprise security</h3><p>Private storage outside the web root, MIME validation, randomized filenames, audit log.</p></div>
+    <div class="card"><div class="icon">📊</div><h3>Reports &amp; analytics</h3><p>Real usage reports: uploads, downloads, storage by type and top contributors, CSV export.</p></div>
+  </div>
+</div></section>
+
+<section class="section stats"><div class="container">
+  <div class="grid c4" style="text-align:center">
+    <div><div class="stat-num" data-count="320">0</div><div class="stat-label">Companies onboard</div></div>
+    <div><div class="stat-num" data-count="128400">0</div><div class="stat-label">Documents managed</div></div>
+    <div><div class="stat-num" data-count="5400">0</div><div class="stat-label">Team members</div></div>
+    <div><div class="stat-num">99.9%</div><div class="stat-label">Uptime target</div></div>
+  </div>
+</div></section>
+
+<section class="section white"><div class="container showcase">
+  <div>
+    <span class="tag2">Organization</span>
+    <h2>Folder structures that mirror how your business works</h2>
+    <p style="color:var(--muted);line-height:1.7">Create nested folders for departments, clients or projects. Move documents between them, color-code folders, and jump anywhere with one global search across names, categories and tags.</p>
+    <ul class="checks">
+      <li>Unlimited nesting with safe move protection</li>
+      <li>Grid &amp; list views with sorting and pagination</li>
+      <li>CSV export of your full document register</li>
+    </ul>
+    <a class="btn btn-outline" href="dashboard.html">Open the file manager demo</a>
+  </div>
+  <div class="folder-demo">
+    <div>📁 Finance <span style="color:var(--muted);font-weight:500">/ Invoices 2026</span></div>
+    <div class="ind">📁 Suppliers <span class="tag info">24 files</span></div>
+    <div class="ind">📕 Contract-Helios.pdf</div>
+    <div>📁 HR <span style="color:var(--muted);font-weight:500">/ Policies</span></div>
+    <div class="ind">📘 Remote-Work-Policy.docx</div>
+    <div>📁 Legal <span class="tag warn">Approvals on</span></div>
+  </div>
+</div></section>
+
+<section class="section" id="workflow"><div class="container">
+  <div class="center"><span class="tag2">Workflow</span><h2>From upload to approved in four steps</h2></div>
+  <div class="grid c4">
+    <div class="card center"><div class="icon" style="margin-inline:auto">☁️⬆️</div><h3>1. Upload</h3><p>Drag &amp; drop multiple files. Type, size and content are validated before storage.</p></div>
+    <div class="card center"><div class="icon" style="margin-inline:auto">🧭</div><h3>2. Organize</h3><p>File into folders, add a category and tags so the whole team can find it.</p></div>
+    <div class="card center"><div class="icon" style="margin-inline:auto">💬</div><h3>3. Collaborate</h3><p>Comment, share with permissions, keep everyone on the latest version.</p></div>
+    <div class="card center"><div class="icon" style="margin-inline:auto">🏅</div><h3>4. Approve</h3><p>Request approval, get a decision with comments, keep the audit trail.</p></div>
+  </div>
+</div></section>
+
+<section class="section security" id="security"><div class="container showcase">
+  <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16)">
+    <p style="color:#93a2c0;text-transform:uppercase;font-size:.78rem;font-weight:700;letter-spacing:.06em;margin-top:0">Access control matrix</p>
+    <table class="matrix">
+      <tr><th>Person</th><th>View</th><th>Download</th><th>Edit</th></tr>
+      <tr><td>Finance team</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+      <tr><td>Sara (Manager)</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>External guest</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+    </table>
+    <p style="font-size:.88rem;margin-bottom:0">🔒 Enforced on the server for every file operation — not just hidden in the UI.</p>
+  </div>
+  <div>
+    <span class="tag2">Security &amp; access control</span>
+    <h2>Your documents never touch the public web root</h2>
+    <p>Files are stored privately with randomized names, served only through permission-checked downloads. Tenant data is isolated at the database level, every action is audit-logged, and share links expire automatically.</p>
+    <a class="btn btn-light" href="dashboard.html" style="background:#fff;color:var(--navy)">See the dashboard demo</a>
+  </div>
+</div></section>
+
+<section class="section white"><div class="container">
+  <div class="center"><span class="tag2">Customers</span><h2>Teams that stopped losing files</h2></div>
+  <div class="grid c3">
+    <figure class="testi"><div class="stars">★★★★★</div><blockquote>“We moved 40,000 contracts into DocuFlow. The approval workflow cut sign-off from days to hours — and the audit log ended every ‘which version is final?’ argument.”</blockquote><figcaption>Operations Director, logistics group</figcaption></figure>
+    <figure class="testi"><div class="stars">★★★★★</div><blockquote>“Client documents used to live in email threads. Now each client has a folder, permissions per team, and expiring share links. Our auditors love it.”</blockquote><figcaption>Founder, accounting practice</figcaption></figure>
+    <figure class="testi"><div class="stars">★★★★★</div><blockquote>“Onboarding paperwork, policies, signed forms — all versioned and searchable. DocuFlow paid for itself in the first month.”</blockquote><figcaption>HR Manager, healthcare provider</figcaption></figure>
+  </div>
+</div></section>
+
+<section class="section" id="pricing"><div class="container">
+  <div class="center"><span class="tag2">Pricing</span><h2>Plans that scale with your files</h2>
+    <div class="switch-row"><span>Monthly</span><button class="switch" id="billingSwitch" aria-label="Toggle yearly billing"></button><span>Yearly</span><span class="save">save ~17%</span></div>
+  </div>
+  <div class="grid c4" id="priceGrid"></div>
+  <p class="center" style="color:var(--muted)">Use coupon <code>WELCOME10</code> for 10% off your first paid plan. Payments are recorded as pending and only marked successful after verified confirmation.</p>
+</div></section>
+
+<section class="section white"><div class="container center">
+  <span class="tag2">Integrations</span><h2>Plays nicely with your stack</h2>
+  <div class="chips">
+    <span class="chip">🧩 Google Drive</span><span class="chip">🧩 Slack</span><span class="chip">🧩 Microsoft 365</span>
+    <span class="chip">🧩 Dropbox</span><span class="chip">🧩 Zapier</span><span class="chip">🧩 DocuSign</span>
+    <span class="chip">🧩 Salesforce</span><span class="chip">🧩 QuickBooks</span>
+  </div>
+  <p style="color:var(--muted)">Plus a documented REST API and webhooks for custom workflows.</p>
+</div></section>
+
+<section class="section" id="faq"><div class="container">
+  <div class="center"><span class="tag2">FAQ</span><h2>Questions, answered</h2></div>
+  <div class="faq">
+    <details open><summary>Is my company data separated from other companies?</summary><p>Yes. DocuFlow is multi-tenant: every record and file carries your company ID, and authorization is checked on every request and every file operation.</p></details>
+    <details><summary>Where are files stored?</summary><p>In private storage outside the public web root, with randomized names — served only through authenticated, permission-checked downloads or expiring share tokens.</p></details>
+    <details><summary>Can I try before paying?</summary><p>Every plan starts with a 14-day free trial. Paid plans are invoiced and recorded as pending until payment is verified.</p></details>
+    <details><summary>What file types are supported?</summary><p>PDF, Word, Excel, PowerPoint, images, text, CSV and ZIP — validated by extension and real content type, with per-plan size limits.</p></details>
+  </div>
+</div></section>
+
+<section class="section cta-band"><div class="container">
+  <h2>Bring order to your company's documents today</h2>
+  <p style="color:#e6defc">Set up your workspace in minutes. Your first 14 days are free.</p>
+  <a class="btn btn-light btn-lg" href="dashboard.html" style="background:#fff;color:var(--navy)">Create your company →</a>
+</div></section>
+
+<footer><div class="container">
+  <div class="foot-grid">
+    <div>
+      <a class="brand" href="index.html" style="color:#fff"><span class="brand-mark">☁</span> DocuFlow Cloud</a>
+      <p style="line-height:1.6">Secure cloud document management for modern teams — organize, share, approve and version every file, with tenant isolation and audit trails.</p>
+    </div>
+    <div><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#security">Security</a><a href="dashboard.html">Live demo</a></div>
+    <div><h4>Company</h4><a href="#workflow">How it works</a><a href="#faq">FAQ</a><a href="dashboard.html">Sign in</a></div>
+    <div><h4>Legal</h4><a href="#">Privacy policy</a><a href="#">Terms of service</a></div>
+  </div>
+  <div class="foot-bottom"><span>© 2026 DocuFlow Cloud. All rights reserved.</span><span>Full app: Core PHP 8 · MySQL · Bootstrap 5 — this page is the static Vercel demo.</span></div>
+</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="assets/js/demo.js"></script>
+<script>
+const hc = document.getElementById('heroChart');
+if (hc && window.Chart) new Chart(hc, {type:'bar', data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat'], datasets:[
+  {label:'Uploads', data:[24,38,31,46,52,40], backgroundColor:'#7c3aed', borderRadius:5},
+  {label:'Approvals', data:[12,19,24,21,30,27], backgroundColor:'#1e3a5f', borderRadius:5}]},
+  options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{display:false}}, maintainAspectRatio:false}});
+// animated counters
+const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return;
+  const el = e.target, target = +el.dataset.count; let n = 0; const step = Math.max(1, Math.round(target / 60));
+  const t = setInterval(() => { n += step; if (n >= target) { n = target; clearInterval(t); } el.textContent = n.toLocaleString() + '+'; }, 24);
+  io.unobserve(el); }), {threshold:.4});
+document.querySelectorAll('[data-count]').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

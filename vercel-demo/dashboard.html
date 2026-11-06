@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workspace — DocuFlow Cloud Demo</title>
+<link rel="stylesheet" href="assets/css/demo.css">
+</head>
+<body>
+<div class="demo-tag">📄 <strong>DocuFlow Cloud dashboard demo</strong> — static showcase with mock data. The production app is Core PHP 8 + MySQL. <a href="index.html">← Back to landing page</a></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand"><span class="brand-mark">☁</span><span>Demo Company Inc<small>DocuFlow workspace</small></span></div>
+    <nav class="sb-nav" id="sbNav">
+      <a data-page="overview" class="active">▦ Overview</a>
+      <a data-page="files">🗂️ File Manager</a>
+      <a data-page="files">☁️⬆ Upload</a>
+      <a data-page="files">🔍 Search</a>
+      <a data-page="approvals">✅ Approvals <span class="pill amber" style="margin-left:auto">2</span></a>
+      <a data-page="files">🏷️ Categories &amp; Tags</a>
+      <a data-page="teams">👥 Teams</a>
+      <a data-page="teams">🧑‍💼 Users</a>
+      <div class="sb-head">Insights</div>
+      <a data-page="overview">📊 Reports</a>
+      <a data-page="overview">💾 Storage</a>
+      <a data-page="overview">⚡ Activity</a>
+      <a data-page="overview">🛡️ Audit Logs</a>
+      <div class="sb-head">Account</div>
+      <a data-page="overview">💳 Subscription</a>
+      <a data-page="overview">⚙️ Settings</a>
+    </nav>
+    <div class="sb-plan">
+      <div style="display:flex;justify-content:space-between"><strong>Professional plan</strong><a href="index.html#pricing" style="color:#d8ccff">Upgrade</a></div>
+      <div class="bar"><i></i></div>
+      <div style="color:#b9c4da">65.6 GB of 100 GB used · Active</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="sbToggle" aria-label="Toggle sidebar">☰</button>
+      <label class="search">🔍 <input type="search" id="globalSearch" placeholder="Search documents, tags, categories…"></label>
+      <div class="top-right">
+        <a class="btn btn-purple btn-sm" href="#" onclick="return false">☁️⬆ Upload</a>
+        <button class="icon-btn" aria-label="Notifications" style="position:relative">🔔<span style="position:absolute;top:-5px;right:-5px;background:#dc2626;color:#fff;font-size:.65rem;border-radius:99px;padding:.05rem .35rem">3</span></button>
+        <span class="avatar">AK</span>
+        <span style="line-height:1.1"><strong style="display:block;font-size:.9rem">Ayesha Khan</strong><small style="color:var(--muted)">Company Admin</small></span>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- OVERVIEW -->
+      <section class="page show" id="page-overview">
+        <div class="h-row"><div><h2>Welcome back, Ayesha</h2><p style="color:var(--muted);margin:.2rem 0 0">Here's what's happening in Demo Company Inc.</p></div>
+        <a class="btn btn-purple" href="#" onclick="switchPage('files');return false">☁️⬆ Upload documents</a></div>
+        <div class="stat-grid">
+          <div class="stat-card"><span class="stat-ic">📄</span><div><div class="stat-v">1,284</div><div class="stat-n">Documents</div></div></div>
+          <div class="stat-card"><span class="stat-ic navy">🗂️</span><div><div class="stat-v">96</div><div class="stat-n">Folders</div></div></div>
+          <div class="stat-card"><span class="stat-ic navy">👥</span><div><div class="stat-v">18</div><div class="stat-n">Team users</div></div></div>
+          <div class="stat-card"><span class="stat-ic">🧩</span><div><div class="stat-v">6</div><div class="stat-n">Teams</div></div></div>
+          <div class="stat-card"><span class="stat-ic navy">✅</span><div><div class="stat-v">2</div><div class="stat-n">Approvals waiting</div></div></div>
+          <div class="stat-card"><span class="stat-ic">🔗</span><div><div class="stat-v">14</div><div class="stat-n">Active share links</div></div></div>
+        </div>
+        <div class="cols">
+          <div>
+            <div class="panel" style="margin-bottom:1.2rem"><h3>Uploads — last 6 months</h3><div style="height:190px"><canvas id="upChart"></canvas></div></div>
+            <div class="panel"><h3>Recent documents</h3><div class="recent" id="recentList"></div></div>
+          </div>
+          <div>
+            <div class="panel" style="margin-bottom:1.2rem"><h3>Documents by category</h3><div style="height:210px"><canvas id="catChart"></canvas></div></div>
+            <div class="panel"><h3>Storage</h3>
+              <div style="display:flex;justify-content:space-between;font-size:.9rem"><span>65.6 GB used</span><span>100 GB</span></div>
+              <div class="meter" style="margin:.5rem 0"><i style="width:66%"></i></div>
+              <p class="kbd-note">66% of your Professional plan quota.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILE MANAGER -->
+      <section class="page" id="page-files">
+        <div class="h-row"><h2>File Manager</h2>
+          <div class="toolbar" style="margin:0">
+            <div class="seg"><button id="gridBtn" class="on">▦ Grid</button><button id="listBtn">☰ List</button></div>
+            <button class="btn btn-purple btn-sm">☁️⬆ Upload here</button>
+          </div></div>
+        <div class="cols-files">
+          <div class="panel">
+            <h3>Folders</h3>
+            <div id="folderTree"></div>
+            <div class="drop" style="margin-top:1rem">⬆️ Drag &amp; drop files here<br><small>PDF, DOCX, XLSX, PNG, ZIP · up to 100 MB</small></div>
+          </div>
+          <div>
+            <p class="kbd-note" id="crumb" style="margin-top:0">Files / <strong>Finance</strong></p>
+            <div class="filegrid" id="fileGrid"></div>
+            <div class="panel" id="fileTableWrap" style="display:none;padding:0;overflow:hidden">
+              <table><thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Size</th><th>Downloads</th><th>Updated</th></tr></thead>
+              <tbody id="fileTable"></tbody></table>
+            </div>
+            <div class="panel" style="margin-top:1.2rem">
+              <h3>Document preview — Supplier Contract 2026.pdf</h3>
+              <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start">
+                <div style="font-size:4rem">📕</div>
+                <div style="flex:1;min-width:230px">
+                  <p style="margin:.2rem 0;color:var(--muted)">Master services agreement with Helios Legal — signed copy.<br>
+                  2.4 MB · Owner Ayesha Khan · Folder Legal · Category Contracts · 5 downloads</p>
+                  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem">
+                    <button class="btn btn-purple btn-sm">⬇ Download</button>
+                    <button class="btn btn-outline btn-sm">🔗 Share link (7 days)</button>
+                    <button class="btn btn-outline btn-sm">🕘 Versions (3)</button>
+                    <button class="btn btn-outline btn-sm" onclick="switchPage('approvals')">✅ Request approval</button>
+                  </div>
+                  <p style="margin-top:.8rem"><span class="pill grey">#signed</span> <span class="pill grey">#2026</span> <span class="pill grey">Finance team: view + download</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- APPROVALS -->
+      <section class="page" id="page-approvals">
+        <div class="h-row"><h2>Approvals</h2></div>
+        <div class="cols">
+          <div class="panel"><h3>Waiting for your decision</h3>
+            <div style="border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between"><strong>Approve Q4 supplier contract</strong><span class="pill amber">pending</span></div>
+              <p style="color:var(--muted);font-size:.9rem">Document: Supplier-Contract-2026.pdf · requested by Bilal Ahmed</p>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap"><input placeholder="Decision comment (optional)" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem;min-width:180px">
+              <button class="btn btn-sm" style="background:#15803d;color:#fff">✓ Approve</button><button class="btn btn-sm btn-outline" style="border-color:#dc2626;color:#dc2626">✗ Reject</button></div>
+            </div>
+            <div style="border:1px solid var(--line);border-radius:14px;padding:16px">
+              <div style="display:flex;justify-content:space-between"><strong>Approve updated travel policy</strong><span class="pill amber">pending</span></div>
+              <p style="color:var(--muted);font-size:.9rem">Document: Travel-Policy-v3.docx · requested by Sara Malik</p>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap"><input placeholder="Decision comment (optional)" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem;min-width:180px">
+              <button class="btn btn-sm" style="background:#15803d;color:#fff">✓ Approve</button><button class="btn btn-sm btn-outline" style="border-color:#dc2626;color:#dc2626">✗ Reject</button></div>
+            </div>
+          </div>
+          <div class="panel"><h3>Your requests</h3>
+            <table><thead><tr><th>Title</th><th>Status</th></tr></thead><tbody>
+              <tr><td>Brand guidelines sign-off</td><td><span class="pill green">approved</span></td></tr>
+              <tr><td>Office lease renewal</td><td><span class="pill green">approved</span></td></tr>
+              <tr><td>Old NDA template</td><td><span class="pill red">rejected</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEAMS -->
+      <section class="page" id="page-teams">
+        <div class="h-row"><h2>Teams &amp; Users</h2><button class="btn btn-purple btn-sm">+ Invite employee</button></div>
+        <div class="cols">
+          <div class="panel"><h3>Teams</h3>
+            <table><thead><tr><th>Team</th><th>Members</th></tr></thead><tbody>
+              <tr><td><strong>Finance</strong><br><small style="color:var(--muted)">Invoices, budgets, contracts</small></td><td>7</td></tr>
+              <tr><td><strong>Operations</strong><br><small style="color:var(--muted)">SOPs and daily documents</small></td><td>9</td></tr>
+              <tr><td><strong>HR</strong><br><small style="color:var(--muted)">People and policies</small></td><td>4</td></tr>
+            </tbody></table>
+          </div>
+          <div class="panel"><h3>Company users</h3>
+            <table><thead><tr><th>User</th><th>Role</th><th>Status</th></tr></thead><tbody>
+              <tr><td>Ayesha Khan<br><small style="color:var(--muted)">admin@demo.com</small></td><td>Company Admin</td><td><span class="pill green">active</span></td></tr>
+              <tr><td>Bilal Ahmed<br><small style="color:var(--muted)">manager@demo.com</small></td><td>Manager</td><td><span class="pill green">active</span></td></tr>
+              <tr><td>Sara Malik<br><small style="color:var(--muted)">member@demo.com</small></td><td>Member</td><td><span class="pill green">active</span></td></tr>
+              <tr><td>Omar Farooq<br><small style="color:var(--muted)">viewer@demo.com</small></td><td>Viewer</td><td><span class="pill green">active</span></td></tr>
+            </tbody></table>
+            <p class="kbd-note">Demo logins (password <code>password</code>): super@docuflow.test · admin@demo.com · manager@demo.com · member@demo.com</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="assets/js/demo.js"></script>
+</body>
+</html>
