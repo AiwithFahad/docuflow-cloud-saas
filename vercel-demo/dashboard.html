@@ -82,19 +82,35 @@
         <div class="h-row"><h2>File Manager</h2>
           <div class="toolbar" style="margin:0">
             <div class="seg"><button id="gridBtn" class="on">▦ Grid</button><button id="listBtn">☰ List</button></div>
+            <select id="sortSel" class="sortsel" aria-label="Sort documents">
+              <option value="new">Newest first</option><option value="name">Name A–Z</option>
+              <option value="size">Largest first</option><option value="dl">Most downloaded</option>
+            </select>
             <button class="btn btn-purple btn-sm">☁️⬆ Upload here</button>
           </div></div>
+        <div class="bulkbar" id="bulkBar" style="display:none">
+          <strong><span id="bulkCount">0</span> selected</strong>
+          <button class="btn btn-light btn-sm" id="bulkFav">★ Favourite</button>
+          <button class="btn btn-light btn-sm" id="bulkDownload">⬇ Download</button>
+          <button class="btn btn-danger btn-sm" id="bulkDelete">🗑 Delete</button>
+          <button class="btn btn-light btn-sm" id="bulkClear" style="margin-left:auto">Clear</button>
+        </div>
         <div class="cols-files">
           <div class="panel">
             <h3>Folders</h3>
             <div id="folderTree"></div>
             <div class="drop" style="margin-top:1rem">⬆️ Drag &amp; drop files here<br><small>PDF, DOCX, XLSX, PNG, ZIP · up to 100 MB</small></div>
+            <div class="storage-meter">
+              <div class="sm-head"><strong>Storage</strong><span id="smText">—</span></div>
+              <div class="sm-track"><div class="sm-fill" id="smFill" style="width:0%"></div></div>
+              <small>Professional plan · 100 GB included</small>
+            </div>
           </div>
           <div>
             <p class="kbd-note" id="crumb" style="margin-top:0">Files / <strong>Finance</strong></p>
             <div class="filegrid" id="fileGrid"></div>
             <div class="panel" id="fileTableWrap" style="display:none;padding:0;overflow:hidden">
-              <table><thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Size</th><th>Downloads</th><th>Updated</th></tr></thead>
+              <table><thead><tr><th style="width:32px"><input type="checkbox" id="checkAll" aria-label="Select all"></th><th>Name</th><th>Category</th><th>Owner</th><th>Size</th><th>Downloads</th><th>Updated</th></tr></thead>
               <tbody id="fileTable"></tbody></table>
             </div>
             <div class="panel" style="margin-top:1.2rem">

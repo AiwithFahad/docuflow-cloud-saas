@@ -183,3 +183,19 @@ tr:hover td{background:#fafaff}
   .search{min-width:0;flex:1}
 }
 @media (max-width:620px){.stat-grid{grid-template-columns:repeat(2,1fr)}.grid.c4,.grid.c3,.grid.c2{grid-template-columns:1fr}.foot-grid{grid-template-columns:1fr 1fr}.content{padding:16px}.dp-side{display:none}}
+
+/* Upgrade additions: bulk bar, storage meter, sort, favourites, toasts */
+.bulkbar{display:flex;gap:.5rem;align-items:center;background:#14243e;color:#fff;border-radius:.7rem;
+  padding:.55rem .9rem;margin:0 0 1rem;flex-wrap:wrap}
+.bulkbar .btn{border:none;cursor:pointer}
+.sortsel{padding:.42rem .6rem;border:1px solid #dfe3ee;border-radius:.55rem;background:#fff;font:inherit}
+.storage-meter{margin-top:1rem;border-top:1px solid #eceef5;padding-top:.9rem}
+.storage-meter .sm-head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.4rem}
+.storage-meter .sm-track{height:10px;background:#eceef5;border-radius:99px;overflow:hidden}
+.storage-meter .sm-fill{height:100%;background:#7c3aed;border-radius:99px;transition:width .4s}
+.storage-meter small{color:var(--muted)}
+.fcard{position:relative}
+.fcard .fcheck{position:absolute;top:10px;left:10px;width:16px;height:16px;accent-color:#6d28d9}
+.fcard .favstar{position:absolute;top:6px;right:10px;cursor:pointer;color:#f5b93f;font-size:1.05rem}
+#demoToasts{position:fixed;right:1rem;bottom:1rem;z-index:99;display:flex;flex-direction:column;gap:.5rem}
+.demo-toast{background:#14243e;color:#fff;padding:.65rem 1rem;border-radius:.6rem;box-shadow:0 10px 26px rgba(20,36,62,.3);font-size:.9rem}

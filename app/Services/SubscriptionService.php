@@ -36,7 +36,7 @@ final class SubscriptionService
         return Database::insert(
             'INSERT INTO subscriptions (tenant_id, plan_id, billing_cycle, status,
                                         current_period_start, current_period_end, created_at, updated_at)
-             VALUES (?,?,"active", NOW(), DATE_ADD(NOW(), INTERVAL ? MONTH), NOW(), NOW())',
+             VALUES (?,?,?,"active", NOW(), DATE_ADD(NOW(), INTERVAL ? MONTH), NOW(), NOW())',
             [$tenantId, $planId, $cycle, $months]
         );
     }

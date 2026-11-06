@@ -1,0 +1,46 @@
+[06-Nov-2026 06:36:37 UTC] PHP Fatal error:  Uncaught TypeError: route(): Argument #3 ($handler) must be of type array, Closure given, called in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php on line 37 and defined in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php:8
+Stack trace:
+#0 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(37): route('GET', 'about', Object(Closure))
+#1 /tmp/routetest.php(5): require('/home/hatch/wor...')
+#2 {main}
+  thrown in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php on line 8
+[06-Nov-2026 06:36:39 UTC] PHP Fatal error:  Uncaught TypeError: route(): Argument #3 ($handler) must be of type array, Closure given, called in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php on line 37 and defined in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php:8
+Stack trace:
+#0 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(37): route('GET', 'about', Object(Closure))
+#1 /tmp/routetest.php(5): require('/home/hatch/wor...')
+#2 {main}
+  thrown in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php on line 8
+[06-Nov-2026 06:36:42 UTC] PHP Fatal error:  Uncaught TypeError: route(): Argument #3 ($handler) must be of type array, Closure given, called in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php on line 37 and defined in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php:8
+Stack trace:
+#0 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(37): route('GET', 'about', Object(Closure))
+#1 /tmp/t2.php(5): require('/home/hatch/wor...')
+#2 {main}
+  thrown in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php on line 8
+[06-Nov-2026 06:36:59 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000] [2002] Connection refused in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php:19
+Stack trace:
+#0 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php(19): PDO->__construct('mysql:host=127....', 'docuflow', Object(SensitiveParameterValue), Array)
+#1 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php(25): Database::pdo()
+#2 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php(38): Database::run('SELECT * FROM s...', Array)
+#3 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Controllers/WebsiteController.php(9): Database::all('SELECT * FROM s...')
+#4 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Controllers/WebsiteController.php(40): WebsiteController->plans()
+#5 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(37): WebsiteController->page('about')
+#6 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(23): {closure}()
+#7 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/public/index.php(16): dispatch('GET', '/about')
+#8 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/public/router.php(4): require('/home/hatch/wor...')
+#9 {main}
+  thrown in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php on line 19
+[06-Nov-2026 06:36:59 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000] [2002] Connection refused in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php:19
+Stack trace:
+#0 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php(19): PDO->__construct('mysql:host=127....', 'docuflow', Object(SensitiveParameterValue), Array)
+#1 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php(25): Database::pdo()
+#2 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php(38): Database::run('SELECT * FROM s...', Array)
+#3 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Controllers/WebsiteController.php(9): Database::all('SELECT * FROM s...')
+#4 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Controllers/WebsiteController.php(40): WebsiteController->plans()
+#5 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(38): WebsiteController->page('features')
+#6 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/routes/web.php(23): {closure}()
+#7 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/public/index.php(16): dispatch('GET', '/features')
+#8 /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/public/router.php(4): require('/home/hatch/wor...')
+#9 {main}
+  thrown in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/app/Helpers/Database.php on line 19
+[06-Nov-2026 06:36:59 UTC] PHP Fatal error:  Cannot redeclare env() (previously declared in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/config/app.php:5) in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/config/app.php on line 18
+[06-Nov-2026 06:36:59 UTC] PHP Fatal error:  Cannot redeclare env() (previously declared in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/config/app.php:5) in /home/hatch/workspace/saas-products-batch2/docuflow-cloud-saas/config/app.php on line 18

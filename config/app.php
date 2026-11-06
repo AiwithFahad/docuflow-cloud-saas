@@ -2,20 +2,24 @@
 // DocuFlow Cloud — application configuration (values overridden by .env / environment)
 declare(strict_types=1);
 
-function env(string $key, $default = null) {
-    static $vars = null;
-    if ($vars === null) {
-        $vars = [];
-        $file = dirname(__DIR__) . '/.env';
-        if (is_file($file)) {
-            foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-                if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue;
-                [$k, $v] = explode('=', $line, 2);
-                $vars[trim($k)] = trim($v);
+// Guarded: this file is required once by app/bootstrap.php and again lazily
+// by the config() helper, so env() must not be declared twice.
+if (!function_exists('env')) {
+    function env(string $key, $default = null) {
+        static $vars = null;
+        if ($vars === null) {
+            $vars = [];
+            $file = dirname(__DIR__) . '/.env';
+            if (is_file($file)) {
+                foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                    if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue;
+                    [$k, $v] = explode('=', $line, 2);
+                    $vars[trim($k)] = trim($v);
+                }
             }
         }
+        return $_ENV[$key] ?? $vars[$key] ?? $default;
     }
-    return $_ENV[$key] ?? $vars[$key] ?? $default;
 }
 
 return [

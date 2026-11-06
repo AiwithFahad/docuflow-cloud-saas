@@ -106,17 +106,64 @@ The installer also writes the three demo document files into
 
 All demo passwords are **`password`** (bcrypt-hashed in the seed data).
 
-| Role | Email | Where |
+| Role | Email | Lands on |
 |---|---|---|
-| Super Admin | `super@docuflow.test` | `/super` |
-| Company Admin | `admin@demo.com` | `/app` |
-| Manager | `manager@demo.com` | `/app` |
-| Member | `member@demo.com` | `/app` |
-| Viewer | `viewer@demo.com` | `/app` |
+| Super Admin | `super@docuflow.test` | `/super-admin/dashboard` |
+| Company Admin | `admin@demo.com` | `/admin/dashboard` |
+| Manager | `manager@demo.com` | `/manager/dashboard` |
+| Member | `member@demo.com` | `/employee/dashboard` |
+| Viewer | `viewer@demo.com` | `/employee/dashboard` |
 
 Coupon: **`WELCOME10`** (10% off). Demo tenant: *Demo Company Inc*
 (Professional plan, active) with sample folders, documents, teams, a paid
 invoice and an open support ticket.
+
+## Upgrade — role dashboard trees, AJAX file manager & workflows (2026-11-06)
+
+The app was upgraded in place (same branding, layouts and design system —
+see `UPGRADE-SUMMARY.md` for the full report):
+
+- **Separate dashboard trees per role**, each with its own navigation and
+  server-side permission checks on every page and document operation:
+  `super-admin/` (dashboard, organizations, users, plans, subscriptions,
+  payments, storage, reports, settings), `admin/` (dashboard, files,
+  folders, users, teams, categories, sharing, approvals, versions, storage,
+  audit-logs, reports, settings), `manager/` (team dashboard, team files,
+  approvals, notifications) and `employee/` (personal dashboard, my files,
+  approvals, notifications). Sign-in lands each role in its tree; the
+  classic `/app` and `/super` consoles remain fully working.
+- **Real JavaScript layer** (`public/assets/js/docuflow.js`): AJAX file
+  manager with drag-and-drop uploads and per-file progress, bulk
+  select/move/delete/restore/archive/favourite/download/share, grid/list
+  toggle persisted per browser, live search + sorting + filters,
+  breadcrumbs, toasts and confirm dialogs.
+- **JSON API** (`api/*`, session + CSRF protected, tenant-scoped) returning
+  real aggregates for Chart.js dashboards: totals, storage, monthly
+  uploads, storage growth, user activity, categories, team performance and
+  approval statistics — with date/user/category filters. See `docs/API.md`.
+- **Completed modules:** restore-from-trash; departments; document expiry
+  dates; custom key/value properties; favourites; password-protected share
+  links with a public unlock page and a share access log (views, downloads,
+  failed unlocks); multi-stage approval workflows with per-department
+  templates and approve / reject / request-changes decisions; full version
+  history preservation with metadata comparison; CSV + printable reports
+  (documents, activity, users, sharing, approvals).
+- **Database:** non-destructive migrations in `database/migrations/`
+  (001 favourites, 002 share passwords + access logs, 003 approval
+  workflows, 004 departments + document metadata — apply 004 before 003 on
+  existing installs). Fresh installs get everything from
+  `database/database.sql` automatically. Demo seeds/logins unchanged, plus
+  a seeded password-protected share link (password `password`) and a
+  two-stage review workflow with a pending request.
+- **Bug fixed:** the router's `route()` helper rejected the Closure
+  handlers used for static pages (TypeError under strict types) — handler
+  type widened to `array|Closure`.
+- **Runtime-verified:** the full smoke flow below was executed against
+  MariaDB 10.11 + the PHP built-in server (install, per-role logins,
+  upload/download, approvals, share unlock, payment verification,
+  migrations) — six pre-existing runtime-fatal bugs in the original
+  build were found and fixed in the process. Full list and results:
+  `UPGRADE-SUMMARY.md` §6–7.
 
 ## Testing
 
@@ -131,6 +178,13 @@ find . -name '*.php' -exec php -l {} \;
 #    open it in a private window → revoke it.
 # 4. /app/subscription → change plan → invoice = unpaid, payment = pending.
 # 5. Sign in as Super Admin → Payments → Verify → invoice flips to paid.
+# 6. Role trees: admin@demo.com → /admin/dashboard + /admin/files (drag &
+#    drop upload, bulk-select files, star a favourite, open Trash and
+#    restore); manager@demo.com → /manager/approvals (seeded two-stage
+#    request is waiting); member@demo.com → /employee/dashboard.
+# 7. Open the seeded share link /s/demotoken000000000000000000000000000000000000001
+#    → password gate (password: password) → download; the view/download is
+#    recorded under /admin/sharing.
 ```
 
 ## Deployment notes (important & honest)

@@ -5,9 +5,20 @@ declare(strict_types=1);
 
 final class AuthController
 {
+    /** Role-based landing page: each role lands in its own dashboard tree. */
+    public static function roleHome(?array $user): string
+    {
+        return match ((string) ($user['role'] ?? '')) {
+            'super_admin' => 'super-admin/dashboard',
+            'company_admin' => 'admin/dashboard',
+            'manager' => 'manager/dashboard',
+            default => 'employee/dashboard',
+        };
+    }
+
     public function showLogin(): void
     {
-        if (auth_user()) redirect(is_super_admin() ? 'super' : 'app');
+        if ($u = auth_user()) redirect(self::roleHome($u));
         view('auth/login');
     }
 
@@ -44,7 +55,7 @@ final class AuthController
         $_SESSION['user_id'] = (int) $user['id'];
         Database::run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [(int) $user['id']]);
         activity_log('auth.login', 'User signed in', $user['tenant_id'] ? (int) $user['tenant_id'] : null, (int) $user['id']);
-        redirect(is_super_admin($user) ? 'super' : 'app');
+        redirect(self::roleHome($user));
     }
 
     public function logout(): void

@@ -37,8 +37,12 @@
       <div class="d-flex justify-content-between align-items-center border-bottom py-2">
         <span><i class="bi <?= e(FileSecurity::iconFor((string) $d['extension'])) ?> me-2"></i><?= e($d['name']) ?>
           <small class="text-muted d-block">deleted <?= e(substr((string) $d['deleted_at'], 0, 10)) ?> · <?= human_bytes($d['size_bytes']) ?></small></span>
+        <span class="d-flex gap-1">
+        <form method="post" action="<?= url('app/documents/' . (int) $d['id'] . '/restore') ?>">
+          <?= csrf_field() ?><button class="btn btn-sm btn-outline-success">Restore</button></form>
         <form method="post" action="<?= url('app/storage/' . (int) $d['id'] . '/purge') ?>" onsubmit="return confirm('Permanently delete this file? This cannot be undone.')">
           <?= csrf_field() ?><button class="btn btn-sm btn-outline-danger">Purge permanently</button></form>
+        </span>
       </div>
       <?php endforeach; ?>
       <?php if (!$trash): ?><p class="text-muted mb-0">Trash is empty.</p><?php endif; ?>

@@ -185,10 +185,11 @@ final class TenantController
     /* ------------------------------------------------------- document view */
     private function docOrFail(int $id): array
     {
-        $doc = Document::one(
-            'SELECT d.*, u.name AS owner_name, f.name AS folder_name, c.name AS category_name
+        $doc = Database::one(
+            'SELECT d.*, u.name AS owner_name, f.name AS folder_name, c.name AS category_name, dep.name AS department_name
              FROM documents d JOIN users u ON u.id = d.owner_id
              LEFT JOIN folders f ON f.id = d.folder_id LEFT JOIN categories c ON c.id = d.category_id
+             LEFT JOIN departments dep ON dep.id = d.department_id
              WHERE d.id = ? AND d.tenant_id = ? AND d.deleted_at IS NULL',
             [$id, $this->tenantId]
         );
@@ -213,7 +214,13 @@ final class TenantController
         $tags = Database::all('SELECT t.* FROM tags t JOIN document_tags dt ON dt.tag_id = t.id WHERE dt.document_id = ?', [$id]);
         $tenantUsers = Database::all('SELECT id, name, email, role FROM users WHERE tenant_id = ? AND status = "active" ORDER BY name', [$this->tenantId]);
         $teams = Database::all('SELECT id, name FROM teams WHERE tenant_id = ? ORDER BY name', [$this->tenantId]);
-        view('tenant/document', $this->base(compact('doc', 'versions', 'comments', 'shares', 'perms', 'approvals', 'tags', 'tenantUsers', 'teams')));
+        $properties = Document::properties($id);
+        $departments = Database::all('SELECT id, name FROM departments WHERE tenant_id = ? ORDER BY name', [$this->tenantId]);
+        $allTags = Database::all('SELECT * FROM tags WHERE tenant_id = ? ORDER BY name', [$this->tenantId]);
+        $isFavorite = (bool) Database::value('SELECT id FROM document_favorites WHERE user_id = ? AND document_id = ?', [(int) $this->user['id'], $id]);
+        $shareLogs = Database::all('SELECT l.*, s.token FROM share_access_logs l JOIN document_shares s ON s.id = l.share_id
+                                    WHERE s.document_id = ? ORDER BY l.id DESC LIMIT 15', [$id]);
+        view('tenant/document', $this->base(compact('doc', 'versions', 'comments', 'shares', 'perms', 'approvals', 'tags', 'tenantUsers', 'teams', 'properties', 'departments', 'allTags', 'isFavorite', 'shareLogs')));
     }
 
     public function preview(int $id): void
@@ -255,10 +262,43 @@ final class TenantController
         if ($action === 'rename') {
             $name = trim((string) ($_POST['name'] ?? ''));
             if ($name !== '') {
-                Document::updateRow($id, ['name' => $name, 'description' => trim((string) ($_POST['description'] ?? '')),
-                    'category_id' => !empty($_POST['category_id']) ? (int) $_POST['category_id'] : null, 'updated_at' => date('Y-m-d H:i:s')], $this->tenantId);
+                $fields = ['name' => $name, 'description' => trim((string) ($_POST['description'] ?? '')),
+                    'category_id' => !empty($_POST['category_id']) ? (int) $_POST['category_id'] : null,
+                    'updated_at' => date('Y-m-d H:i:s')];
+                if (array_key_exists('department_id', $_POST)) {
+                    $fields['department_id'] = !empty($_POST['department_id']) ? (int) $_POST['department_id'] : null;
+                }
+                if (array_key_exists('expires_at', $_POST)) {
+                    $exp = trim((string) $_POST['expires_at']);
+                    $fields['expires_at'] = preg_match('/^\d{4}-\d{2}-\d{2}$/', $exp) ? $exp : null;
+                }
+                if (!empty($_POST['status']) && in_array($_POST['status'], ['active', 'archived'], true)) {
+                    $fields['status'] = (string) $_POST['status'];
+                }
+                Document::updateRow($id, $fields, $this->tenantId);
                 audit_log('document', $id, 'renamed', ['name' => $doc['name']], ['name' => $name]);
             }
+        } elseif ($action === 'meta') {
+            // Custom key/value properties: replace the set for this document.
+            Database::run('DELETE FROM document_properties WHERE document_id = ? AND tenant_id = ?', [$id, $this->tenantId]);
+            $keys = (array) ($_POST['prop_key'] ?? []);
+            $vals = (array) ($_POST['prop_value'] ?? []);
+            foreach ($keys as $i => $k) {
+                $k = trim((string) $k);
+                if ($k === '') continue;
+                Database::run('INSERT INTO document_properties (tenant_id, document_id, prop_key, prop_value) VALUES (?,?,?,?)',
+                    [$this->tenantId, $id, substr($k, 0, 100), substr(trim((string) ($vals[$i] ?? '')), 0, 500)]);
+            }
+            // Tags sync from the metadata form.
+            if (isset($_POST['tag_ids']) && is_array($_POST['tag_ids'])) {
+                Database::run('DELETE FROM document_tags WHERE document_id = ?', [$id]);
+                foreach ($_POST['tag_ids'] as $tagId) {
+                    Database::run('INSERT IGNORE INTO document_tags (document_id, tag_id) VALUES (?,?)', [$id, (int) $tagId]);
+                }
+            }
+            audit_log('document', $id, 'metadata_updated');
+            flash('success', 'Metadata saved.');
+            redirect('app/documents/' . $id);
         } elseif ($action === 'move' || $action === 'copy') {
             $target = !empty($_POST['folder_id']) ? (int) $_POST['folder_id'] : null;
             if ($target && !Folder::findForTenant($target, $this->tenantId)) { flash('error', 'Invalid folder.'); redirect('app/documents/' . $id); }
@@ -297,6 +337,22 @@ final class TenantController
         redirect('app/files');
     }
 
+    /** Restore a soft-deleted document from trash. */
+    public function restore(int $id): void
+    {
+        require_csrf();
+        $doc = Database::one('SELECT * FROM documents WHERE id = ? AND tenant_id = ? AND deleted_at IS NOT NULL', [$id, $this->tenantId]);
+        if (!$doc || ($this->user['role'] !== 'company_admin' && (int) $doc['owner_id'] !== (int) $this->user['id'] && !Document::userCanAccess($doc, $this->user, 'edit'))) {
+            flash('error', 'Document not found in trash or access denied.');
+            redirect('app/storage');
+        }
+        Database::run('UPDATE documents SET deleted_at = NULL, updated_at = NOW() WHERE id = ?', [$id]);
+        activity_log('document.restored', 'Restored from trash: ' . $doc['original_name'], $this->tenantId);
+        audit_log('document', $id, 'restored');
+        flash('success', 'Document restored from trash.');
+        redirect('app/storage');
+    }
+
     public function newVersion(int $id): void
     {
         AuthMiddleware::permission('documents.edit');
@@ -313,12 +369,9 @@ final class TenantController
                        VALUES (?,?,?,?,?,?,?,NOW())',
             [$this->tenantId, $id, $next, $stored, (int) $file['size'], (int) $this->user['id'], trim((string) ($_POST['note'] ?? ''))]);
         Document::updateRow($id, ['stored_name' => $stored, 'size_bytes' => (int) $file['size'], 'updated_at' => date('Y-m-d H:i:s')], $this->tenantId);
-        // Enforce plan version-history limit: drop oldest versions beyond the cap.
-        $limit = SubscriptionService::versionLimit($this->tenantId);
-        if ($limit > 0) {
-            $old = Database::all('SELECT id FROM document_versions WHERE document_id = ? ORDER BY version_number DESC LIMIT 100000 OFFSET ' . (int) $limit, [$id]);
-            foreach ($old as $v) Database::run('DELETE FROM document_versions WHERE id = ?', [(int) $v['id']]);
-        }
+        // Version history is preserved in full: older versions stay downloadable
+        // and restorable (the plan's version_history figure is a guide, not a
+        // destructive cap — upgraded per the DocuFlow upgrade spec).
         audit_log('document', $id, 'version_added', null, ['version' => $next]);
         flash('success', 'Version ' . $next . ' uploaded.');
         redirect('app/documents/' . $id);
@@ -359,9 +412,11 @@ final class TenantController
         $doc = $this->docOrFail($id);
         $days = max(1, min(365, (int) ($_POST['days'] ?? 7)));
         $token = bin2hex(random_bytes(24));
-        Database::run('INSERT INTO document_shares (tenant_id, document_id, created_by, token, can_download, expires_at, is_active, created_at)
-                       VALUES (?,?,?,?,?, DATE_ADD(NOW(), INTERVAL ? DAY), 1, NOW())',
-            [$this->tenantId, $id, (int) $this->user['id'], $token, !empty($_POST['can_download']) ? 1 : 0, $days]);
+        $password = trim((string) ($_POST['password'] ?? ''));
+        Database::run('INSERT INTO document_shares (tenant_id, document_id, created_by, token, can_download, password_hash, expires_at, is_active, created_at)
+                       VALUES (?,?,?,?,?,?, DATE_ADD(NOW(), INTERVAL ? DAY), 1, NOW())',
+            [$this->tenantId, $id, (int) $this->user['id'], $token, !empty($_POST['can_download']) ? 1 : 0,
+             $password !== '' ? password_hash($password, PASSWORD_BCRYPT) : null, $days]);
         activity_log('document.shared', 'Share link created for ' . $doc['original_name'], $this->tenantId);
         flash('success', 'Share link created: ' . url('s/' . $token));
         redirect('app/documents/' . $id);

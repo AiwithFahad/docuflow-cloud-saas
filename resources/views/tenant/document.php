@@ -14,6 +14,11 @@
             Folder <?= e($doc['folder_name'] ?? 'Root') ?> · Category <?= e($doc['category_name'] ?? '—') ?> ·
             <?= (int) $doc['download_count'] ?> downloads · Updated <?= e(substr((string) $doc['updated_at'], 0, 10)) ?>
           </div>
+          <div class="small mt-1">
+            <?php if (!empty($doc['department_name'])): ?><span class="badge text-bg-light"><i class="bi bi-diagram-3 me-1"></i><?= e($doc['department_name']) ?></span><?php endif; ?>
+            <?php if (!empty($doc['expires_at'])): ?><span class="badge <?= $doc['expires_at'] < date('Y-m-d') ? 'text-bg-danger' : 'text-bg-warning' ?>"><i class="bi bi-calendar-x me-1"></i><?= $doc['expires_at'] < date('Y-m-d') ? 'Expired' : 'Expires' ?> <?= e($doc['expires_at']) ?></span><?php endif; ?>
+            <?php if (($doc['status'] ?? 'active') === 'archived'): ?><span class="badge text-bg-secondary">Archived</span><?php endif; ?>
+          </div>
           <?php foreach ($tags as $t): ?><span class="badge text-bg-light me-1"><i class="bi bi-tag me-1"></i><?= e($t['name']) ?></span><?php endforeach; ?>
         </div>
       </div>
@@ -23,6 +28,8 @@
         <button class="btn btn-outline-navy" data-bs-toggle="collapse" data-bs-target="#previewBox"><i class="bi bi-eye me-1"></i>Preview</button>
         <?php endif; ?>
         <a class="btn btn-purple" href="<?= url('app/documents/' . (int) $doc['id'] . '/download') ?>"><i class="bi bi-download me-1"></i>Download</a>
+        <button type="button" class="btn <?= $isFavorite ? 'btn-warning' : 'btn-outline-secondary' ?>" data-df-fav="<?= (int) $doc['id'] ?>" title="Favourite">
+          <i class="bi <?= $isFavorite ? 'bi-star-fill' : 'bi-star' ?>"></i></button>
         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editModal"><i class="bi bi-pencil me-1"></i>Rename / move / copy</button>
         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#versionModal"><i class="bi bi-clock-history me-1"></i>New version</button>
         <form method="post" action="<?= url('app/documents/' . (int) $doc['id'] . '/delete') ?>" onsubmit="return confirm('Move this document to trash?')">
@@ -80,16 +87,19 @@
     <!-- Sharing -->
     <div class="panel mb-4">
       <div class="panel-head"><h5><i class="bi bi-link-45deg me-1"></i>Share links</h5></div>
-      <form method="post" action="<?= url('app/documents/' . (int) $doc['id'] . '/share') ?>" class="d-flex gap-2 mb-3">
+      <form method="post" action="<?= url('app/documents/' . (int) $doc['id'] . '/share') ?>" class="mb-3">
         <?= csrf_field() ?>
-        <select class="form-select" name="days"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="90">90 days</option></select>
-        <label class="form-check form-switch align-self-center m-0"><input type="checkbox" class="form-check-input" name="can_download" value="1" checked> DL</label>
-        <button class="btn btn-purple">Create</button>
+        <div class="d-flex gap-2 mb-2">
+          <select class="form-select" name="days"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="90">90 days</option><option value="365">1 year</option></select>
+          <label class="form-check form-switch align-self-center m-0"><input type="checkbox" class="form-check-input" name="can_download" value="1" checked> DL</label>
+          <button class="btn btn-purple">Create</button>
+        </div>
+        <input class="form-control form-control-sm" name="password" placeholder="Optional link password (leave blank for none)" autocomplete="new-password">
       </form>
       <?php foreach ($shares as $s): ?>
       <div class="share-row">
         <code class="small text-break"><?= url('s/' . $s['token']) ?></code>
-        <div class="small text-muted"><?= $s['is_active'] ? 'Active' : 'Revoked' ?> · <?= (int) $s['views'] ?> views · expires <?= e(substr((string) $s['expires_at'], 0, 10)) ?> · <?= $s['can_download'] ? 'download on' : 'view only' ?></div>
+        <div class="small text-muted"><?= $s['is_active'] ? 'Active' : 'Revoked' ?> · <?= (int) $s['views'] ?> views · expires <?= e(substr((string) $s['expires_at'], 0, 10)) ?> · <?= $s['can_download'] ? 'download on' : 'view only' ?><?= !empty($s['password_hash']) ? ' · <i class="bi bi-lock-fill"></i> password' : '' ?></div>
         <?php if ($s['is_active']): ?><form method="post" action="<?= url('app/documents/' . (int) $doc['id'] . '/share/' . (int) $s['id'] . '/revoke') ?>"><?= csrf_field() ?><button class="btn btn-sm btn-outline-danger mt-1">Revoke</button></form><?php endif; ?>
       </div>
       <?php endforeach; ?>
@@ -123,6 +133,63 @@
       <?php endforeach; ?>
       <?php if (!$perms): ?><p class="text-muted small mb-0">Only the owner and company admins can access this file.</p><?php endif; ?>
     </div>
+
+    <!-- Metadata -->
+    <div class="panel mb-4">
+      <div class="panel-head"><h5><i class="bi bi-sliders me-1"></i>Metadata</h5></div>
+      <form method="post" action="<?= url('app/documents/' . (int) $doc['id'] . '/update') ?>">
+        <?= csrf_field() ?><input type="hidden" name="action" value="rename">
+        <input type="hidden" name="name" value="<?= e($doc['name']) ?>">
+        <input type="hidden" name="description" value="<?= e($doc['description'] ?? '') ?>">
+        <input type="hidden" name="category_id" value="<?= (int) ($doc['category_id'] ?? 0) ?>">
+        <label class="form-label small">Department</label>
+        <select class="form-select form-select-sm mb-2" name="department_id">
+          <option value="">— None —</option>
+          <?php foreach ($departments as $dep): ?><option value="<?= (int) $dep['id'] ?>" <?= (int) ($doc['department_id'] ?? 0) === (int) $dep['id'] ? 'selected' : '' ?>><?= e($dep['name']) ?></option><?php endforeach; ?>
+        </select>
+        <label class="form-label small">Expiry / review date</label>
+        <input type="date" class="form-control form-control-sm mb-2" name="expires_at" value="<?= e($doc['expires_at'] ?? '') ?>">
+        <label class="form-label small">Status</label>
+        <select class="form-select form-select-sm mb-3" name="status">
+          <option value="active" <?= ($doc['status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Active</option>
+          <option value="archived" <?= ($doc['status'] ?? '') === 'archived' ? 'selected' : '' ?>>Archived</option>
+        </select>
+        <button class="btn btn-sm btn-outline-navy w-100">Save metadata</button>
+      </form>
+      <hr>
+      <form method="post" action="<?= url('app/documents/' . (int) $doc['id'] . '/update') ?>">
+        <?= csrf_field() ?><input type="hidden" name="action" value="meta">
+        <label class="form-label small">Custom properties</label>
+        <div id="propRows">
+          <?php foreach ($properties as $p): ?>
+          <div class="d-flex gap-1 mb-1"><input class="form-control form-control-sm" name="prop_key[]" value="<?= e($p['prop_key']) ?>" placeholder="Key">
+            <input class="form-control form-control-sm" name="prop_value[]" value="<?= e($p['prop_value'] ?? '') ?>" placeholder="Value"></div>
+          <?php endforeach; ?>
+          <div class="d-flex gap-1 mb-1"><input class="form-control form-control-sm" name="prop_key[]" placeholder="Key">
+            <input class="form-control form-control-sm" name="prop_value[]" placeholder="Value"></div>
+        </div>
+        <label class="form-label small mt-2">Tags</label>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <?php $docTagIds = array_map(fn($t) => (int) $t['id'], $tags); foreach ($allTags as $t): ?>
+          <label class="form-check small"><input type="checkbox" class="form-check-input" name="tag_ids[]" value="<?= (int) $t['id'] ?>" <?= in_array((int) $t['id'], $docTagIds, true) ? 'checked' : '' ?>> <?= e($t['name']) ?></label>
+          <?php endforeach; ?>
+        </div>
+        <button class="btn btn-sm btn-purple w-100">Save properties &amp; tags</button>
+      </form>
+    </div>
+
+    <!-- Share activity -->
+    <?php if ($shareLogs): ?>
+    <div class="panel mb-4">
+      <div class="panel-head"><h5><i class="bi bi-activity me-1"></i>Share activity</h5></div>
+      <?php foreach ($shareLogs as $l): ?>
+      <div class="small d-flex justify-content-between py-1 border-bottom">
+        <span><i class="bi <?= $l['action'] === 'download' ? 'bi-download' : ($l['action'] === 'unlock_failed' ? 'bi-lock text-danger' : 'bi-eye') ?> me-1"></i><?= e($l['action']) ?></span>
+        <span class="text-muted"><?= e(substr((string) $l['created_at'], 0, 16)) ?><?= $l['ip_address'] ? ' · ' . e($l['ip_address']) : '' ?></span>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- Approvals -->
     <div class="panel">

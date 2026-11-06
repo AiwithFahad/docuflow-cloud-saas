@@ -70,3 +70,23 @@ body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-
   .app-sidebar.open{left:0;box-shadow:0 0 60px rgba(0,0,0,.35)}
 }
 @media print{.app-sidebar,.app-topbar,.btn{display:none!important}.app-content{padding:0}}
+
+/* --- Upgrade additions: AJAX file manager, charts, toasts, print ------- */
+.df-bulkbar{position:sticky;top:70px;z-index:30;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+  background:var(--navy,#14243e);color:#fff;border-radius:.75rem;padding:.6rem .9rem;margin-bottom:1rem;
+  box-shadow:0 8px 24px rgba(20,36,62,.25)}
+.df-drop-overlay{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  text-align:center;background:rgba(124,58,237,.10);border:2px dashed var(--purple,#6d28d9);border-radius:1rem;color:var(--purple,#6d28d9)}
+.df-uploads{position:fixed;right:1rem;bottom:1rem;z-index:1080;width:min(420px,92vw);background:#fff;
+  border:1px solid #e5e7eb;border-radius:.75rem;box-shadow:0 12px 32px rgba(20,36,62,.18);padding:.75rem}
+.df-upload-row{display:flex;align-items:center;gap:.6rem;padding:.3rem 0;font-size:.85rem}
+.df-upload-row .progress{height:8px}
+.df-upload-error{color:var(--danger,#dc2626)}
+.doc-card .dropdown,.doc-card .btn{visibility:visible}
+#dfToasts{z-index:1090}
+@media print{
+  .app-sidebar,.app-topbar,.btn,form,.df-bulkbar{display:none!important}
+  .app-main{margin:0!important}
+  .app-content{padding:0!important}
+  .panel{box-shadow:none!important;border:1px solid #ddd}
+}

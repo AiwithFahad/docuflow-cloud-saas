@@ -12,6 +12,35 @@ plan limits, payment verification) apply uniformly.
 - API tokens: create per-tenant tokens in the Super Admin roadmap; send as
   `Authorization: Bearer <token>`. Every request is tenant-scoped by token.
 
+## Implemented internal JSON API (used by the workspace UI)
+
+These endpoints are **live in the codebase** (`app/Controllers/ApiController.php`,
+driven by `public/assets/js/docuflow.js`). They are session-authenticated
+(super admins are rejected — tenant workspaces only), tenant-scoped, and
+every document read/write passes `Document::userCanAccess()`. All POSTs
+require the CSRF token (form field `_csrf` or `X-CSRF-Token` header).
+Responses are JSON: `{ "ok": true, ... }` or `{ "ok": false, "error": "…" }`
+with 401/403/404/419/422 status codes as appropriate.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/stats` | Real aggregates: documents, folders, storage used/cap/% , active users, shared documents, my pending approvals + requests, favourites, trash, unread notifications, plan name. |
+| GET | `/api/charts?type=…` | Chart.js series. Types: `uploads`, `storage` (cumulative MB), `activity`, `categories`, `teams`, `approvals`. Filters: `from`, `to`, `user`, `category`. |
+| GET | `/api/documents` | Permission-filtered listing. Params: `q`, `folder` (id/`root`), `category`, `tag`, `department`, `owner`, `status` (`active`/`archived`/`favorites`/`recent`/`any`/`trash`), `sort` (`new`/`old`/`name`/`size`/`downloads`), `from`, `to`, `page`, `per`. |
+| GET | `/api/documents/{id}` | Document detail + versions + tags + custom properties. |
+| GET | `/api/documents/{id}/versions` | Version list + current metadata (for comparison UI). |
+| POST | `/api/documents/bulk` | JSON `{action, ids[], folder_id?}` — actions: `move`, `delete`, `restore`, `purge` (admin), `archive`, `unarchive`, `favorite`, `unfavorite`. |
+| POST | `/api/documents/{id}/favorite` | Toggle favourite star. |
+| POST | `/api/documents/{id}/rename` | JSON `{name}` rename (edit permission required). |
+| POST | `/api/documents/{id}/share` | Create share link `{days, can_download, password?}` → returns the public URL. |
+| GET | `/api/folders?folder=` | Child folders with counts + breadcrumb chain + full tree. |
+| POST | `/api/folders` | Create folder `{name, parent_id?, color?, description?}`. |
+| POST | `/api/upload` | Multipart (`files[]`, optional `folder_id`, `category_id`, `department_id`) — same FileSecurity + quota pipeline as the classic upload. |
+| GET | `/api/search?q=` | Global search across accessible documents + folders. |
+| GET | `/api/notifications` | Latest 25 notifications + unread count. |
+| POST | `/api/notifications/read` | Mark one (`{id}`) or all read. |
+| GET | `/api/activity` | Recent activity (tenant-wide for admins, own for others). |
+
 ## Endpoints (contract)
 
 | Method | Path | Description |

@@ -95,31 +95,104 @@ document.addEventListener('DOMContentLoaded', () => {
   const q = document.getElementById('globalSearch');
   function visibleDocs() {
     const term = (q && q.value || '').toLowerCase();
-    return DOCS.filter(d =>
+    const out = DOCS.filter(d =>
       (activeFolder === 'all' || d.folder === activeFolder) &&
       (!term || d.name.toLowerCase().includes(term) || d.cat.toLowerCase().includes(term)));
+    const mode = window.__dfSort || 'new';
+    if (mode === 'name') out.sort((a, b) => a.name.localeCompare(b.name));
+    if (mode === 'size') out.sort((a, b) => sizeBytes(b.size) - sizeBytes(a.size));
+    if (mode === 'dl') out.sort((a, b) => (b.dl || 0) - (a.dl || 0));
+    return out;
   }
   function renderFiles() {
     const docs = visibleDocs();
     const crumb = document.getElementById('crumb');
     if (crumb) crumb.innerHTML = `Files / <strong>${activeFolder === 'all' ? 'All files' : activeFolder}</strong> · ${docs.length} item(s)`;
     if (gridEl) gridEl.innerHTML = docs.map(d => `
-      <div class="fcard"><span class="file-ic">${d.icon}</span><b>${d.name}.${d.ext}</b>
+      <div class="fcard"><input type="checkbox" class="fcheck" data-idx="${DOCS.indexOf(d)}" ${(window.__dfSel && window.__dfSel.has(DOCS.indexOf(d))) ? 'checked' : ''}>
+      <span class="favstar" data-fav="${DOCS.indexOf(d)}">${d.fav ? '★' : '☆'}</span>
+      <span class="file-ic">${d.icon}</span><b>${d.name}.${d.ext}</b>
       <small>${d.size} · ${d.date}</small><br><span class="pill grey">${d.cat}</span></div>`).join('')
       || '<p style="color:var(--muted)">No documents match.</p>';
     if (tableEl) tableEl.innerHTML = docs.map(d => `
-      <tr><td>${d.icon} ${d.name}.${d.ext}</td><td>${d.cat}</td><td>${d.owner}</td><td>${d.size}</td><td>${d.dl}</td><td>${d.date}</td></tr>`).join('');
+      <tr><td><input type="checkbox" class="fcheck" data-idx="${DOCS.indexOf(d)}" ${(window.__dfSel && window.__dfSel.has(DOCS.indexOf(d))) ? 'checked' : ''}></td>
+      <td>${d.icon} ${d.name}.${d.ext} ${d.fav ? '★' : ''}</td><td>${d.cat}</td><td>${d.owner}</td><td>${d.size}</td><td>${d.dl}</td><td>${d.date}</td></tr>`).join('');
     if (recentEl) recentEl.innerHTML = DOCS.slice(0, 5).map(d => `
       <a href="#" onclick="switchPage('files');return false"><span class="file-ic">${d.icon}</span>
       <span><strong>${d.name}.${d.ext}</strong><small>${d.owner} · ${d.size} · ${d.date}</small></span><span style="margin-left:auto;color:#98a2b8">›</span></a>`).join('');
+    if (window.__decorateFiles) window.__decorateFiles();
   }
   renderTree(); renderFiles();
   if (q) q.addEventListener('input', () => { switchPage('files'); renderFiles(); });
 
   const gridBtn = document.getElementById('gridBtn'), listBtn = document.getElementById('listBtn');
   const wrap = document.getElementById('fileTableWrap');
-  if (gridBtn && listBtn) {
-    gridBtn.addEventListener('click', () => { gridBtn.classList.add('on'); listBtn.classList.remove('on'); gridEl.style.display = ''; wrap.style.display = 'none'; });
-    listBtn.addEventListener('click', () => { listBtn.classList.add('on'); gridBtn.classList.remove('on'); gridEl.style.display = 'none'; wrap.style.display = ''; });
+  function applyView(v) {
+    if (!gridBtn || !listBtn) return;
+    gridBtn.classList.toggle('on', v === 'grid'); listBtn.classList.toggle('on', v === 'list');
+    gridEl.style.display = v === 'grid' ? '' : 'none'; wrap.style.display = v === 'grid' ? 'none' : '';
+    localStorage.setItem('df_demo_view', v);
   }
+  if (gridBtn && listBtn) {
+    gridBtn.addEventListener('click', () => applyView('grid'));
+    listBtn.addEventListener('click', () => applyView('list'));
+    applyView(localStorage.getItem('df_demo_view') || 'grid');
+  }
+
+  /* ---- upgrade: bulk selection, sorting, storage meter, toasts ---- */
+  window.__dfSel = new Set();
+  function sizeBytes(s) {
+    const m = /([\d.]+)\s*(KB|MB|GB)/i.exec(s || '');
+    if (!m) return 0;
+    const n = parseFloat(m[1]);
+    return n * (m[2].toUpperCase() === 'GB' ? 1073741824 : m[2].toUpperCase() === 'MB' ? 1048576 : 1024);
+  }
+  function toast(msg) {
+    let wrapEl = document.getElementById('demoToasts');
+    if (!wrapEl) { wrapEl = document.createElement('div'); wrapEl.id = 'demoToasts'; document.body.appendChild(wrapEl); }
+    const t = document.createElement('div'); t.className = 'demo-toast'; t.textContent = msg;
+    wrapEl.appendChild(t); setTimeout(() => t.remove(), 3600);
+  }
+  function syncBulk() {
+    const bar = document.getElementById('bulkBar');
+    if (bar) bar.style.display = window.__dfSel.size ? 'flex' : 'none';
+    const c = document.getElementById('bulkCount'); if (c) c.textContent = window.__dfSel.size;
+  }
+  function renderStorage() {
+    const usedBytes = 37.4 * 1073741824 + DOCS.reduce((a, d) => a + sizeBytes(d.size), 0);
+    const pct = Math.min(100, usedBytes / (100 * 1073741824) * 100);
+    const fill = document.getElementById('smFill'), txt = document.getElementById('smText');
+    if (fill) fill.style.width = pct.toFixed(1) + '%';
+    if (txt) txt.textContent = (usedBytes / 1073741824).toFixed(1) + ' GB of 100 GB (' + pct.toFixed(1) + '%)';
+  }
+  window.__decorateFiles = function () {
+    document.querySelectorAll('.fcheck').forEach(c => c.addEventListener('change', () => {
+      const i = parseInt(c.dataset.idx, 10);
+      c.checked ? window.__dfSel.add(i) : window.__dfSel.delete(i);
+      document.querySelectorAll('.fcheck[data-idx="' + i + '"]').forEach(o => { o.checked = c.checked; });
+      syncBulk();
+    }));
+    document.querySelectorAll('.favstar').forEach(s => s.addEventListener('click', () => {
+      const d = DOCS[parseInt(s.dataset.fav, 10)];
+      d.fav = !d.fav; renderFiles(); toast(d.fav ? 'Added to favourites.' : 'Removed from favourites.');
+    }));
+    renderStorage(); syncBulk();
+  };
+  const sortSel = document.getElementById('sortSel');
+  if (sortSel) sortSel.addEventListener('change', () => { window.__dfSort = sortSel.value; renderFiles(); });
+  const checkAll = document.getElementById('checkAll');
+  if (checkAll) checkAll.addEventListener('change', () => {
+    visibleDocs().forEach(d => { const i = DOCS.indexOf(d); checkAll.checked ? window.__dfSel.add(i) : window.__dfSel.delete(i); });
+    renderFiles();
+  });
+  const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+  bind('bulkClear', () => { window.__dfSel.clear(); renderFiles(); });
+  bind('bulkFav', () => { window.__dfSel.forEach(i => { DOCS[i].fav = true; }); toast(window.__dfSel.size + ' document(s) favourited.'); window.__dfSel.clear(); renderFiles(); });
+  bind('bulkDownload', () => { toast('Demo: ' + window.__dfSel.size + ' file(s) would download now.'); });
+  bind('bulkDelete', () => {
+    const n = window.__dfSel.size;
+    [...window.__dfSel].sort((a, b) => b - a).forEach(i => DOCS.splice(i, 1));
+    window.__dfSel.clear(); renderFiles(); toast(n + ' document(s) moved to trash.');
+  });
+  window.__decorateFiles();
 });

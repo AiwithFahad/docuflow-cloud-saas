@@ -1,0 +1,53 @@
+<?php // Super-admin dashboard tree shell — same design language as partials/super-open, nav points at the super-admin/* tree. Expects: $user, $pageTitle. ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+<meta name="app-base" content="<?= e(url('')) ?>">
+<title><?= e($pageTitle ?? 'Super Admin') ?> — DocuFlow Cloud</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="<?= url('assets/css/app.css') ?>" rel="stylesheet">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="app-sidebar super" id="appSidebar">
+    <a class="sidebar-brand" href="<?= url('super-admin/dashboard') ?>"><span class="brand-mark"><i class="bi bi-cloud-check-fill"></i></span>
+      <span class="sidebar-brand-text">DocuFlow <small class="d-block text-white-50">Super Admin</small></span></a>
+    <nav class="sidebar-nav">
+      <a href="<?= url('super-admin/dashboard') ?>"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="<?= url('super-admin/organizations') ?>"><i class="bi bi-buildings"></i> Organizations</a>
+      <a href="<?= url('super-admin/users') ?>"><i class="bi bi-people"></i> Users</a>
+      <a href="<?= url('super-admin/plans') ?>"><i class="bi bi-layers"></i> Plans</a>
+      <a href="<?= url('super-admin/subscriptions') ?>"><i class="bi bi-arrow-repeat"></i> Subscriptions</a>
+      <a href="<?= url('super-admin/payments') ?>"><i class="bi bi-credit-card-2-front"></i> Payments</a>
+      <a href="<?= url('super-admin/storage') ?>"><i class="bi bi-hdd-stack"></i> Storage</a>
+      <a href="<?= url('super-admin/reports') ?>"><i class="bi bi-bar-chart"></i> Reports</a>
+      <a href="<?= url('super-admin/settings') ?>"><i class="bi bi-gear"></i> Settings</a>
+      <div class="sidebar-heading">Platform</div>
+      <a href="<?= url('super') ?>"><i class="bi bi-grid-1x2"></i> Classic console</a>
+      <a href="<?= url('super/tickets') ?>"><i class="bi bi-life-preserver"></i> Support Tickets</a>
+      <a href="<?= url('super/invoices') ?>"><i class="bi bi-receipt"></i> Invoices</a>
+    </nav>
+  </aside>
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="btn btn-light d-lg-none" id="sidebarToggle" aria-label="Menu"><i class="bi bi-list"></i></button>
+      <strong class="ms-2"><?= e($pageTitle ?? 'Super Admin') ?></strong>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span class="badge text-bg-warning"><i class="bi bi-shield-fill-check me-1"></i>Platform owner</span>
+        <div class="dropdown">
+          <button class="btn btn-light d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <span class="avatar"><?= e(strtoupper(substr($user['name'], 0, 1))) ?></span>
+            <span class="d-none d-md-block fw-semibold small"><?= e($user['name']) ?></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><form method="post" action="<?= url('logout') ?>"><?= csrf_field() ?><button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sign out</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <main class="app-content">
+      <?php partial('flash'); ?>

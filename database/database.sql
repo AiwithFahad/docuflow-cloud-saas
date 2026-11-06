@@ -99,7 +99,7 @@ CREATE TABLE invitations (
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_inv_tenant (tenant_id),
-    CONSTRAINT fk_inv_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    CONSTRAINT fk_invit_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_inv_by FOREIGN KEY (invited_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
@@ -342,11 +342,23 @@ CREATE TABLE tags (
     CONSTRAINT fk_tag_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE departments (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT UNSIGNED NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    color VARCHAR(9) NOT NULL DEFAULT '#6d28d9',
+    head_id INT UNSIGNED NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_dept_tenant (tenant_id),
+    CONSTRAINT fk_dept_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE documents (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     tenant_id INT UNSIGNED NOT NULL,
     folder_id INT UNSIGNED NULL,
     category_id INT UNSIGNED NULL,
+    department_id INT UNSIGNED NULL,
     owner_id INT UNSIGNED NOT NULL,
     name VARCHAR(200) NOT NULL,
     description TEXT NULL,
@@ -356,6 +368,7 @@ CREATE TABLE documents (
     mime_type VARCHAR(120) NOT NULL,
     size_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
     status ENUM('active','archived') NOT NULL DEFAULT 'active',
+    expires_at DATE NULL,                       -- optional document expiry / review date
     download_count INT UNSIGNED NOT NULL DEFAULT 0,
     deleted_at TIMESTAMP NULL,                  -- soft delete (trash)
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -367,6 +380,7 @@ CREATE TABLE documents (
     CONSTRAINT fk_docs_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_docs_folder FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL,
     CONSTRAINT fk_docs_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+    CONSTRAINT fk_docs_department FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
     CONSTRAINT fk_docs_owner FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -416,27 +430,72 @@ CREATE TABLE document_shares (
     created_by INT UNSIGNED NOT NULL,
     token CHAR(48) NOT NULL UNIQUE,             -- 192-bit random token
     can_download TINYINT(1) NOT NULL DEFAULT 0,
+    password_hash VARCHAR(255) NULL,            -- optional bcrypt password gate
     expires_at TIMESTAMP NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     views INT UNSIGNED NOT NULL DEFAULT 0,
+    last_accessed_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_share_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_share_doc FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
     CONSTRAINT fk_share_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE share_access_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT UNSIGNED NOT NULL,
+    share_id INT UNSIGNED NOT NULL,
+    action ENUM('view','download','unlock_failed') NOT NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sal_share (share_id),
+    INDEX idx_sal_tenant (tenant_id),
+    CONSTRAINT fk_sal_share FOREIGN KEY (share_id) REFERENCES document_shares(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE approval_workflows (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT UNSIGNED NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    description VARCHAR(500) NULL,
+    department_id INT UNSIGNED NULL,
+    category_id INT UNSIGNED NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_by INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_wf_tenant (tenant_id),
+    CONSTRAINT fk_wf_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    CONSTRAINT fk_wf_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+    CONSTRAINT fk_wf_cat FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE approval_workflow_steps (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    workflow_id INT UNSIGNED NOT NULL,
+    step_order INT NOT NULL DEFAULT 1,
+    approver_id INT UNSIGNED NULL,
+    role_name VARCHAR(50) NULL,
+    label VARCHAR(150) NULL,
+    INDEX idx_wfs_workflow (workflow_id),
+    CONSTRAINT fk_wfs_wf FOREIGN KEY (workflow_id) REFERENCES approval_workflows(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE approvals (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     tenant_id INT UNSIGNED NOT NULL,
     document_id INT UNSIGNED NOT NULL,
+    workflow_id INT UNSIGNED NULL,
     requested_by INT UNSIGNED NOT NULL,
     title VARCHAR(200) NOT NULL,
-    status ENUM('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+    status ENUM('pending','approved','rejected','changes_requested','cancelled') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_appr_tenant (tenant_id),
     CONSTRAINT fk_appr_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_appr_doc FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
+    CONSTRAINT fk_appr_wf FOREIGN KEY (workflow_id) REFERENCES approval_workflows(id) ON DELETE SET NULL,
     CONSTRAINT fk_appr_user FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -445,7 +504,7 @@ CREATE TABLE approval_steps (
     approval_id INT UNSIGNED NOT NULL,
     step_order INT NOT NULL DEFAULT 1,
     approver_id INT UNSIGNED NOT NULL,
-    status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+    status ENUM('pending','approved','rejected','changes_requested','skipped') NOT NULL DEFAULT 'pending',
     comment VARCHAR(500) NULL,
     decided_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -465,6 +524,31 @@ CREATE TABLE comments (
     CONSTRAINT fk_comment_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_comment_doc FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
     CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE document_favorites (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    document_id INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_favorite (user_id, document_id),
+    INDEX idx_fav_tenant (tenant_id),
+    CONSTRAINT fk_fav_doc FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
+    CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE document_properties (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT UNSIGNED NOT NULL,
+    document_id INT UNSIGNED NOT NULL,
+    prop_key VARCHAR(100) NOT NULL,
+    prop_value VARCHAR(500) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_prop (document_id, prop_key),
+    INDEX idx_prop_tenant (tenant_id),
+    CONSTRAINT fk_prop_doc FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -572,5 +656,38 @@ INSERT INTO support_tickets (tenant_id, user_id, name, email, subject, message, 
 INSERT INTO activity_logs (tenant_id, user_id, action, description) VALUES
 (1, 2, 'tenant.registered', 'Demo Company Inc workspace created'),
 (1, 2, 'document.uploaded', 'Uploaded Supplier-Contract-2026.txt');
+
+-- Upgrade seeds: departments, document metadata, favourites, a password-
+-- protected share link, an approval workflow and a pending approval.
+INSERT INTO departments (id, tenant_id, name, color, head_id) VALUES
+(1, 1, 'Finance', '#1e3a5f', 3), (2, 1, 'HR', '#0e7490', 2),
+(3, 1, 'Legal', '#b45309', 2), (4, 1, 'Operations', '#6d28d9', 3);
+UPDATE documents SET department_id = 3 WHERE id = 1;
+UPDATE documents SET department_id = 2, expires_at = DATE_ADD(CURDATE(), INTERVAL 90 DAY) WHERE id = 2;
+UPDATE documents SET department_id = 1 WHERE id = 3;
+
+INSERT INTO document_favorites (tenant_id, user_id, document_id) VALUES
+(1, 4, 1), (1, 3, 3), (1, 2, 1);
+
+INSERT INTO document_properties (tenant_id, document_id, prop_key, prop_value) VALUES
+(1, 1, 'Client', 'Helios Legal'), (1, 1, 'Retention', '7 years'),
+(1, 2, 'Review cycle', 'Annual'), (1, 3, 'Quarter', 'Q3 2026');
+
+-- Sample public share link for the Remote Work Policy.
+-- Password for this demo link: "password" (same bcrypt hash as the demo users).
+INSERT INTO document_shares (id, tenant_id, document_id, created_by, token, can_download, password_hash, expires_at, is_active, views) VALUES
+(1, 1, 2, 2, 'demotoken000000000000000000000000000000000000001', 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', DATE_ADD(NOW(), INTERVAL 30 DAY), 1, 2);
+INSERT INTO share_access_logs (tenant_id, share_id, action, ip_address) VALUES
+(1, 1, 'view', '127.0.0.1'), (1, 1, 'download', '127.0.0.1');
+
+-- Two-stage review workflow + one pending request using it.
+INSERT INTO approval_workflows (id, tenant_id, name, description, department_id, category_id, is_active, created_by) VALUES
+(1, 1, 'Standard document review', 'Manager review, then company admin sign-off.', NULL, NULL, 1, 2);
+INSERT INTO approval_workflow_steps (workflow_id, step_order, approver_id, label) VALUES
+(1, 1, 3, 'Manager review'), (1, 2, 2, 'Admin sign-off');
+INSERT INTO approvals (id, tenant_id, document_id, workflow_id, requested_by, title, status) VALUES
+(1, 1, 1, 1, 4, 'Please approve the Supplier Contract 2026', 'pending');
+INSERT INTO approval_steps (approval_id, step_order, approver_id, status) VALUES
+(1, 1, 3, 'pending'), (1, 2, 2, 'pending');
 
 -- End of DocuFlow Cloud schema + seeds.

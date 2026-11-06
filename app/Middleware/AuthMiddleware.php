@@ -34,7 +34,7 @@ final class AuthMiddleware
     {
         $user = self::auth();
         if (is_super_admin($user)) {
-            redirect('super');
+            redirect('super-admin/dashboard');
         }
         $tenant = auth_tenant();
         if (!$tenant) {

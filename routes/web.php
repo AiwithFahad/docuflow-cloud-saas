@@ -5,7 +5,7 @@ declare(strict_types=1);
 
 $GLOBALS['routes'] = [];
 
-function route(string $method, string $path, array $handler): void
+function route(string $method, string $path, array|Closure $handler): void
 {
     $GLOBALS['routes'][] = [$method, trim($path, '/'), $handler];
 }
@@ -133,3 +133,87 @@ route('GET', 'super/settings', [SuperAdminController::class, 'settings']);
 route('POST', 'super/settings', [SuperAdminController::class, 'saveSettings']);
 route('GET', 'super/logs', [SuperAdminController::class, 'logs']);
 route('GET', 'super/analytics', [SuperAdminController::class, 'analytics']);
+
+/* --------------------------------------- upgrade: trash restore + share unlock */
+route('POST', 'app/documents/{id}/restore', [TenantController::class, 'restore']);
+route('POST', 's/{token}/unlock', [ShareController::class, 'unlock']);
+
+/* ------------------------------------------------------------- JSON API */
+route('GET', 'api/stats', [ApiController::class, 'stats']);
+route('GET', 'api/charts', [ApiController::class, 'charts']);
+route('GET', 'api/documents', [ApiController::class, 'documents']);
+route('GET', 'api/documents/{id}', [ApiController::class, 'document']);
+route('GET', 'api/documents/{id}/versions', [ApiController::class, 'versions']);
+route('POST', 'api/documents/bulk', [ApiController::class, 'bulk']);
+route('POST', 'api/documents/{id}/favorite', [ApiController::class, 'favorite']);
+route('POST', 'api/documents/{id}/rename', [ApiController::class, 'rename']);
+route('POST', 'api/documents/{id}/share', [ApiController::class, 'createShare']);
+route('GET', 'api/folders', [ApiController::class, 'folders']);
+route('POST', 'api/folders', [ApiController::class, 'createFolder']);
+route('POST', 'api/upload', [ApiController::class, 'upload']);
+route('GET', 'api/search', [ApiController::class, 'search']);
+route('GET', 'api/notifications', [ApiController::class, 'notifications']);
+route('POST', 'api/notifications/read', [ApiController::class, 'markNotificationsRead']);
+route('GET', 'api/activity', [ApiController::class, 'activity']);
+
+/* ------------------------------------------------- super-admin tree */
+route('GET', 'super-admin/dashboard', [SuperAdminTreeController::class, 'dashboard']);
+route('GET', 'super-admin/organizations', [SuperAdminTreeController::class, 'organizations']);
+route('POST', 'super-admin/organizations/{id}/action', [SuperAdminTreeController::class, 'organizationAction']);
+route('GET', 'super-admin/users', [SuperAdminTreeController::class, 'users']);
+route('POST', 'super-admin/users/{id}/action', [SuperAdminTreeController::class, 'userAction']);
+route('GET', 'super-admin/plans', [SuperAdminTreeController::class, 'plans']);
+route('POST', 'super-admin/plans/save', [SuperAdminTreeController::class, 'savePlan']);
+route('POST', 'super-admin/coupons/save', [SuperAdminTreeController::class, 'saveCoupon']);
+route('GET', 'super-admin/subscriptions', [SuperAdminTreeController::class, 'subscriptions']);
+route('GET', 'super-admin/payments', [SuperAdminTreeController::class, 'payments']);
+route('POST', 'super-admin/payments/{id}/action', [SuperAdminTreeController::class, 'paymentAction']);
+route('GET', 'super-admin/storage', [SuperAdminTreeController::class, 'storage']);
+route('GET', 'super-admin/reports', [SuperAdminTreeController::class, 'reports']);
+route('GET', 'super-admin/settings', [SuperAdminTreeController::class, 'settings']);
+route('POST', 'super-admin/settings', [SuperAdminTreeController::class, 'saveSettings']);
+
+/* ------------------------------------------------------- admin tree */
+route('GET', 'admin/dashboard', [AdminTreeController::class, 'dashboard']);
+route('GET', 'admin/files', [AdminTreeController::class, 'files']);
+route('GET', 'admin/folders', [AdminTreeController::class, 'folders']);
+route('POST', 'admin/folders', [AdminTreeController::class, 'saveFolder']);
+route('GET', 'admin/users', [AdminTreeController::class, 'users']);
+route('POST', 'admin/users/invite', [AdminTreeController::class, 'inviteUser']);
+route('POST', 'admin/users/{id}', [AdminTreeController::class, 'updateUser']);
+route('GET', 'admin/teams', [AdminTreeController::class, 'teams']);
+route('POST', 'admin/teams', [AdminTreeController::class, 'saveTeam']);
+route('GET', 'admin/categories', [AdminTreeController::class, 'categories']);
+route('POST', 'admin/categories/{kind}', [AdminTreeController::class, 'saveTaxonomy']);
+route('POST', 'admin/departments', [AdminTreeController::class, 'saveDepartment']);
+route('GET', 'admin/sharing', [AdminTreeController::class, 'sharing']);
+route('POST', 'admin/sharing/{id}', [AdminTreeController::class, 'shareAction']);
+route('POST', 'admin/sharing/permission/{id}/remove', [AdminTreeController::class, 'removePermission']);
+route('GET', 'admin/approvals', [AdminTreeController::class, 'approvals']);
+route('POST', 'admin/approvals/request', [AdminTreeController::class, 'requestApproval']);
+route('POST', 'admin/approvals/{id}/decide', [AdminTreeController::class, 'decideApproval']);
+route('POST', 'admin/workflows', [AdminTreeController::class, 'saveWorkflow']);
+route('GET', 'admin/versions', [AdminTreeController::class, 'versions']);
+route('GET', 'admin/storage', [AdminTreeController::class, 'storage']);
+route('GET', 'admin/audit-logs', [AdminTreeController::class, 'auditLogs']);
+route('GET', 'admin/reports', [AdminTreeController::class, 'reports']);
+route('GET', 'admin/settings', [AdminTreeController::class, 'settings']);
+route('POST', 'admin/settings', [AdminTreeController::class, 'saveSettings']);
+
+/* ----------------------------------------------------- manager tree */
+route('GET', 'manager/dashboard', [ManagerTreeController::class, 'dashboard']);
+route('GET', 'manager/files', [ManagerTreeController::class, 'files']);
+route('GET', 'manager/approvals', [ManagerTreeController::class, 'approvals']);
+route('POST', 'manager/approvals/request', [ManagerTreeController::class, 'requestApproval']);
+route('POST', 'manager/approvals/{id}/decide', [ManagerTreeController::class, 'decideApproval']);
+route('GET', 'manager/notifications', [ManagerTreeController::class, 'notifications']);
+route('POST', 'manager/notifications/read', [ManagerTreeController::class, 'markNotificationsRead']);
+
+/* ---------------------------------------------------- employee tree */
+route('GET', 'employee/dashboard', [EmployeeTreeController::class, 'dashboard']);
+route('GET', 'employee/files', [EmployeeTreeController::class, 'files']);
+route('GET', 'employee/approvals', [EmployeeTreeController::class, 'approvals']);
+route('POST', 'employee/approvals/request', [EmployeeTreeController::class, 'requestApproval']);
+route('POST', 'employee/approvals/{id}/decide', [EmployeeTreeController::class, 'decideApproval']);
+route('GET', 'employee/notifications', [EmployeeTreeController::class, 'notifications']);
+route('POST', 'employee/notifications/read', [EmployeeTreeController::class, 'markNotificationsRead']);
